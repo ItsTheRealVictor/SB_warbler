@@ -13,8 +13,7 @@ app = Flask(__name__)
 
 # Get DB_URI from environ variable (useful for production/testing) or,
 # if not set there, use development local db.
-app.config['SQLALCHEMY_DATABASE_URI'] = (
-    os.environ.get('DATABASE_URL', 'postgresql:///warbler'))
+app.config['SQLALCHEMY_DATABASE_URI'] = (os.environ.get('DATABASE_URL', 'postgresql://postgres:admin@localhost/warbler'))
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
@@ -44,13 +43,15 @@ def do_login(user):
     """Log in user."""
 
     session[CURR_USER_KEY] = user.id
+    pass
 
-
+@app.route('/logout', methods=['GET', 'POST'])
 def do_logout():
     """Logout user."""
-
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
+    flash('SUCCESSFULLY LOGGED OUT')
+    return redirect('/login')
 
 
 @app.route('/signup', methods=["GET", "POST"])
