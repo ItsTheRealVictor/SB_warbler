@@ -45,13 +45,6 @@ def do_login(user):
     session[CURR_USER_KEY] = user.id
     pass
 
-@app.route('/logout', methods=['GET', 'POST'])
-def do_logout():
-    """Logout user."""
-    if CURR_USER_KEY in session:
-        del session[CURR_USER_KEY]
-    flash('SUCCESSFULLY LOGGED OUT')
-    return redirect('/login')
 
 
 @app.route('/signup', methods=["GET", "POST"])
@@ -110,11 +103,14 @@ def login():
     return render_template('users/login.html', form=form)
 
 
-@app.route('/logout')
-def logout():
-    """Handle logout of user."""
+@app.route('/logout', methods=['GET', 'POST'])
+def do_logout():
+    """Logout user."""
+    if CURR_USER_KEY in session:
+        del session[CURR_USER_KEY]
+    flash('SUCCESSFULLY LOGGED OUT')
+    return redirect('/login')
 
-    # IMPLEMENT THIS
 
 
 ##############################################################################
