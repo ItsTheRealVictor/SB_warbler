@@ -5,7 +5,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from forms import UserAddForm, LoginForm, MessageForm, UserEditProfileForm
-from models import db, connect_db, User, Message
+from models import db, connect_db, User, Message, Follows
 
 CURR_USER_KEY = "curr_user"
 
@@ -15,6 +15,7 @@ app = Flask(__name__)
 # if not set there, use development local db.
 app.config['SQLALCHEMY_DATABASE_URI'] = (os.environ.get('DATABASE_URL', 'postgresql://postgres:admin@localhost/warbler'))
 
+app.debug = False
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
@@ -313,13 +314,19 @@ def homepage():
     - logged in: 100 most recent messages of followed_users
     """
 
+    # NOTE re: Part One, step 6 ('fix homepage')
+        # after around an hour of trying to filter through g.user.following and g.user.is_following, ad to look at the solution for this step.
+        # No change I would have come up with this on my own
+    
+    
     if g.user:
+        following_ids = [f.id for f in g.user.following] + [g.user.id]
         messages = (Message
-                    .query
-                    .order_by(Message.timestamp.desc())
-                    .limit(100)
-                    .all())
-
+            .query
+            .filter(Message.user_id.in_(following_ids))
+            .order_by(Message.timestamp.desc())
+            .limit(100)
+            .all())
         return render_template('home.html', messages=messages)
 
     else:
