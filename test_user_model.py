@@ -7,6 +7,7 @@
 
 import os
 from unittest import TestCase
+from sqlalchemy import exc
 
 from models import db, User, Message, Follows
 
@@ -72,7 +73,12 @@ class UserModelTestCase(TestCase):
             db.session.commit()
         self.client = app.test_client()
 
-    def test_user_model(self):
+    def tearDown(self):
+        res = super().tearDown()
+        db.session.rollback()
+        return res
+
+    def test_user_models(self):
         """Testing User Model basics"""
 
         users = User.query.all()
@@ -81,4 +87,19 @@ class UserModelTestCase(TestCase):
 
             self.assertEqual(len(user.messages), 0)
             self.assertEqual(len(user.followers), 0)
+
+    def test_bad_signup(self):
+        invalid = User.signup(None, "asdf@asdf.com", "password", None)
+        uid = 123456789
+        invalid.id = uid
+        with self.assertRaises(exc.IntegrityError) as context:
+            db.session.commit()
+
+    def test_no_email(self):
+        bad_email = User.signup(username='JohnRedcorn',email=None,password='wematanye', image_url=None)
+        uid = 69
+        bad_email.id = uid
+        with self.assertRaises(exc.IntegrityError) as context:
+            db.session.commit()
+
 
