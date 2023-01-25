@@ -38,27 +38,47 @@ db.create_all()
 class UserModelTestCase(TestCase):
     """Test views for messages."""
 
+
     def setUp(self):
         """Create test client, add sample data."""
+        db.drop_all()
+        db.create_all()
 
-        User.query.delete()
-        Message.query.delete()
-        Follows.query.delete()
+        test_users = [
+            {
+                'email': 'hank@strickland.com',
+                'username': 'HankHill',
+                'password': 'propane',
+            },
+            {
+                'email': 'peggy@arlenpublicschools.com',
+                'username': 'PeggyHill',
+                'password': 'boggle',
+            },
+            {
+                'email': 'dale@dalesdeadbug.com',
+                'username': 'DaleG',
+                'password': 'bugs',
+            },
+        ]
 
+
+        for user in test_users:
+            new = User.signup(email=user['email'],
+                        username=user['username'],
+                        password=user['password'],
+                        image_url=None)
+            db.session.add(new)
+            db.session.commit()
         self.client = app.test_client()
 
     def test_user_model(self):
-        """Does basic model work?"""
+        """Testing User Model basics"""
 
-        u = User(
-            email="test@test.com",
-            username="testuser",
-            password="HASHED_PASSWORD"
-        )
+        users = User.query.all()
+        for user in users:
+            # Users should have no messages & no followers
 
-        db.session.add(u)
-        db.session.commit()
+            self.assertEqual(len(user.messages), 0)
+            self.assertEqual(len(user.followers), 0)
 
-        # User should have no messages & no followers
-        self.assertEqual(len(u.messages), 0)
-        self.assertEqual(len(u.followers), 0)
